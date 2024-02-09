@@ -254,8 +254,8 @@ pub fn PostListing(
               // <ActionForm action=block_user_action class="inline-block">
               // <input
               // type="hidden"
-              <li>placeholder// name="person_id"
-              // value=format!("{}", post_view.get().creator.id.0)
+              // name="person_id"
+              <li>placeholder// value=format!("{}", post_view.get().creator.id.0)
               // />
               // <input type="hidden" name="block"/>
               // <button title="Block user" type="submit">
