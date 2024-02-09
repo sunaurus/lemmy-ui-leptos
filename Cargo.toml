@@ -30,6 +30,10 @@ actix-web = { version = "4", features = ["macros"], optional = true }
 actix-session = { version = "0.9", features = [
   "cookie-session",
 ], optional = true }
+tokio = { version = "1.36", default-features = false, features = [
+  "macros",
+], optional = true }
+web-sys = "0.3.68"
 
 [package.metadata.leptos-i18n]
 default = "en"
@@ -62,6 +66,7 @@ ssr = [
   "dep:actix-web",
   "dep:actix-files",
   "dep:actix-session",
+  "dep:tokio",
 ]
 
 [package.metadata.cargo-all-features]

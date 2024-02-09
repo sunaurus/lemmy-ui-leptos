@@ -255,8 +255,8 @@ pub fn PostListing(
               // <input
               // type="hidden"
               // name="person_id"
-              <li>placeholder// value=format!("{}", post_view.get().creator.id.0)
-              // />
+              // value=format!("{}", post_view.get().creator.id.0)
+              <li>placeholder// />
               // <input type="hidden" name="block"/>
               // <button title="Block user" type="submit">
               // <Icon icon=Block/>
