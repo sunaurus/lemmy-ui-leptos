@@ -69,9 +69,9 @@ impl VoteResponse for CommentResponse {}
 
 #[component]
 fn Votes<VoteFn, Res>(
-  #[prop(into)] id: TextProp,
-  #[prop(into, default = MaybeSignal::Static(0))] vote: MaybeSignal<i16>,
-  #[prop(into, default = MaybeSignal::Static(0))] score: MaybeSignal<i64>,
+  #[prop(into)] id: MaybeSignal<i32>,
+  #[prop(into, optional, default = MaybeSignal::Static(0))] vote: MaybeSignal<i16>,
+  #[prop(into, optional)] score: MaybeSignal<i64>,
   #[prop()] action: Action<VoteFn, Result<VoteFn::Output, ServerFnError<VoteFn::Error>>>,
 ) -> impl IntoView
 where
@@ -116,6 +116,7 @@ where
         class=move || {
             with!(| is_downvoted | if * is_downvoted { Some("text-accent") } else { None })
         }
+
         title="Down vote"
       >
         <Icon icon=Downvote/>
@@ -126,9 +127,9 @@ where
 
 #[component]
 pub fn PostVotes(
-  #[prop(into)] id: TextProp,
-  #[prop(into, default = MaybeSignal::Static(0))] vote: MaybeSignal<i16>,
-  #[prop(into, default = MaybeSignal::Static(0))] score: MaybeSignal<i64>,
+  #[prop(into)] id: MaybeSignal<i32>,
+  #[prop(into, optional)] vote: MaybeSignal<i16>,
+  #[prop(into, optional)] score: MaybeSignal<i64>,
 ) -> impl IntoView {
   let action = Action::<VotePostFn, _>::server();
 
@@ -137,9 +138,9 @@ pub fn PostVotes(
 
 #[component]
 pub fn CommentVotes(
-  #[prop(into)] id: TextProp,
-  #[prop(into, default = MaybeSignal::Static(0))] vote: MaybeSignal<i16>,
-  #[prop(into, default = MaybeSignal::Static(0))] score: MaybeSignal<i64>,
+  #[prop(into)] id: MaybeSignal<i32>,
+  #[prop(into, optional)] vote: MaybeSignal<i16>,
+  #[prop(into, optional)] score: MaybeSignal<i64>,
 ) -> impl IntoView {
   let action = Action::<VoteCommentFn, _>::server();
 

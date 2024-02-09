@@ -1,11 +1,14 @@
-use crate::ui::components::common::icon::{
-  Icon,
-  IconType::{Block, Crosspost, Downvote, Report, Save, Upvote, VerticalDots},
+use crate::ui::components::common::{
+  icon::{
+    Icon,
+    IconType::{Block, Crosspost, Downvote, Report, Save, Upvote, VerticalDots},
+  },
+  votes::PostVotes,
 };
 use lemmy_client::lemmy_api_common::{
-  lemmy_db_schema::newtypes::*, //{PersonId, PostId},
-  lemmy_db_views::structs::*,   //PostView,
-  person::*,                    //{BlockPerson, BlockPersonResponse},
+  lemmy_db_schema::{newtypes::*, source::post::Post}, //{PersonId, PostId},
+  lemmy_db_views::structs::*,                         //PostView,
+  person::*,                                          //{BlockPerson, BlockPersonResponse},
   post::*, //{CreatePostLike, CreatePostReport, PostReportResponse, PostResponse, SavePost},
 };
 use leptos::*;
@@ -70,26 +73,16 @@ use leptos_router::*;
 // }
 
 #[component]
-pub fn PostListing(
-  post_view: MaybeSignal<PostView>,
-  error: RwSignal<Option<String>>,
-) -> impl IntoView {
-  let post_view = create_rw_signal(post_view.get());
-
-  // let vote_action = create_server_action::<VotePostFn>();
-
-  // create_effect(move |_| {
-  //   error.set(None);
-  //   match vote_action.value().get() {
-  //     None => {}
-  //     Some(Ok(o)) => {
-  //       post_view.set(o.post_view);
-  //     }
-  //     Some(Err(e)) => {
-  //       error.set(Some(e.to_string()));
-  //     }
-  //   }
-  // });
+pub fn PostListing(post_view: PostView) -> impl IntoView {
+  let PostView {
+    post,
+    creator,
+    my_vote,
+    counts,
+    community,
+    unread_comments,
+    ..
+  } = post_view;
 
   // let save_post_action = create_server_action::<SavePostFn>();
 
@@ -134,83 +127,42 @@ pub fn PostListing(
 
   view! {
     <tr>
-      // <td class="flex flex-col text-center">
-      // <ActionForm action=vote_action>
-      // <input type="hidden" name="post_id" value=format!("{}", post_view.get().post.id)/>
-      // <input
-      // type="hidden"
-      // name="score"
-      // value=move || if Some(1) == post_view.get().my_vote { 0 } else { 1 }
-      // />
-      // <button
-      // type="submit"
-      // class=move || { if Some(1) == post_view.get().my_vote { " text-accent" } else { "" } }
+      <td class="flex flex-col text-center">
+        <PostVotes id=post.id.0 score=counts.score vote=my_vote.unwrap_or_default()/>
+      </td>
+      // <td>
 
-      // title="Up vote"
-      // >
-      // <Icon icon=Upvote/>
-      // </button>
-      // </ActionForm>
-      // <span class="block text-sm">{move || post_view.get().counts.score}</span>
-      // <ActionForm action=vote_action>
-      // <input type="hidden" name="post_id" value=format!("{}", post_view.get().post.id)/>
-      // <input
-      // type="hidden"
-      // name="score"
-      // value=move || if Some(-1) == post_view.get().my_vote { 0 } else { -1 }
-      // />
-      // <button
-      // type="submit"
-      // class=move || { if Some(-1) == post_view.get().my_vote { " text-accent" } else { "" } }
+      {if let Some(url) = post.url {
+          view! {
+            <span>
+              <a href=url.to_string()>{post.thumbnail_url.map(|tn| tn.to_string())}</a>
+            </span>
+          }
+      } else {
+          view! { <span>{post.thumbnail_url.map(|tn| tn.to_string())}</span> }
+      }}
 
-      // title="Down vote"
-      // >
-      // <Icon icon=Downvote/>
-      // </button>
-      // </ActionForm>
       // </td>
       <td>
-
-        {move || {
-            if let Some(d) = post_view.get().post.url {
-                let u = d.inner().to_string();
-                view! {
-                  <span>
-                    <a href=u>{move || format!("{:#?}", post_view.get().post.thumbnail_url)}</a>
-                  </span>
-                }
-            } else {
-                view! {
-                  <span>{move || format!("{:#?}", post_view.get().post.thumbnail_url)}</span>
-                }
-            }
-        }}
-
-      </td>
-      <td>
-        <A href=move || format!("/post/{}", post_view.get().post.id) class="block">
-          <span class="text-lg">{move || post_view.get().post.name}</span>
+        <A href=format!("/post/{}", post.id.0) class="block">
+          <span class="text-lg">{post.name}</span>
         </A>
         <span class="block">
-          <A
-            href=move || format!("/u/{}", post_view.get().creator.name)
-            class="text-sm inline-block"
-          >
-            {post_view.get().creator.name}
+          <A href=format!("/u/{}", creator.name) class="text-sm inline-block">
+            {creator.name}
           </A>
           " to "
-          <A class="text-sm inline-block" href=format!("/c/{}", post_view.get().community.name)>
-            {post_view.get().community.title}
+          <A class="text-sm inline-block" href=format!("/c/{}", community.name)>
+            {community.title}
           </A>
         </span>
         <span class="block">
-          <span title=move || format!("{} comments", post_view.get().unread_comments)>
+          <span title=move || format!("{unread_comments} comments")>
             <A
-              href=move || { format!("/post/{}?scrollToComments=true", post_view.get().post.id) }
-
+              href=format!("/post/{}?scrollToComments=true", post.id.0)
               class="text-xs inline-block whitespace-nowrap align-top"
             >
-              {post_view.get().unread_comments}
+              {unread_comments}
             </A>
           </span>
           // <ActionForm action=save_post_action class="inline-block align-top">
@@ -256,10 +208,10 @@ pub fn PostListing(
               // type="hidden"
               // name="person_id"
               // value=format!("{}", post_view.get().creator.id.0)
-              <li>placeholder// />
+              // />
               // <input type="hidden" name="block"/>
               // <button title="Block user" type="submit">
-              // <Icon icon=Block/>
+              <li>placeholder// <Icon icon=Block/>
               // "Block user"
               // </button>
               // </ActionForm>
